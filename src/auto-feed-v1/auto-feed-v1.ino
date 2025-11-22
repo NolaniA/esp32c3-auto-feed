@@ -21,6 +21,29 @@ const int   daylightOffset_sec = 0;
 // ---- config
 const char* CONFIG_URL = "https://nolania.github.io/esp32c3-auto-feed/config-auto-feed/config-time.json";
 
+struct FeedTime {
+    int hour;
+    int minute;
+    int duration_sec;
+  };  
+
+struct Config {
+    FeedTime feed_time1;
+    FeedTime feed_time2;
+    FeedTime feed_time3;
+  };
+
+Config cfg;
+
+unsigned long last_api_time = 0;
+const unsigned long api_interval = 5 * 60 * 1000;   // 5 นาที
+
+
+
+//----------------------------------
+// function
+//----------------------------------
+
 
 String http_get(String url){
   // check wifi connect
@@ -51,6 +74,34 @@ String http_get(String url){
 
 
 }
+Config http_get_config(String url) {
+  Config cfg;
+
+  String json = http_get(url);
+  StaticJsonDocument<512> doc;
+  deserializeJson(doc, json);
+
+  cfg.feed_time1 = {
+    doc["feed_time1"]["hour"],
+    doc["feed_time1"]["minute"],
+    doc["feed_time1"]["duration_sec"]
+  };
+
+  cfg.feed_time2 = {
+    doc["feed_time2"]["hour"],
+    doc["feed_time2"]["minute"],
+    doc["feed_time2"]["duration_sec"]
+  };
+
+  cfg.feed_time3 = {
+    doc["feed_time3"]["hour"],
+    doc["feed_time3"]["minute"],
+    doc["feed_time3"]["duration_sec"]
+  };
+
+  return cfg;
+}
+
 
 void connectWiFi() {
   Serial.println("WiFi connecting...");
@@ -65,20 +116,6 @@ void connectWiFi() {
 }
 
 
-String getConfig(String data, String key){
-  
-  JsonDocument dataConfig;
-
-  DeserializationError error = deserializeJson(dataConfig, data);
-  if (error) {
-    Serial.println("deserializeJson() failed: ");
-  }
-
-  String update = dataConfig[key];
-  return  update ;
-}
-
-
 bool getTimeInfo(struct tm &timeinfo) {
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
@@ -90,24 +127,6 @@ bool getTimeInfo(struct tm &timeinfo) {
   return true;
 }
 
-void checkLightTrigger(struct tm timeinfo) {
-  int hour = timeinfo.tm_hour;
-  int minute = timeinfo.tm_min;
-
-  // เงื่อนไขเวลาใดเวลาหนึ่ง
-  bool isTriggerTime =
-      (hour == 8  && minute == 0) ||
-      (hour == 12 && minute == 0) ||
-      (hour == 18 && minute == 0);
-
-  if (isTriggerTime) {
-    // digitalWrite(LED_PIN, HIGH);
-    Serial.println("LED ON (trigger time)");
-  } else {
-    Serial.println("LED OFF (trigger time)");
-    // digitalWrite(LED_PIN, LOW);
-  }
-}
 
 
 void setup() {
@@ -116,35 +135,58 @@ void setup() {
   delay(300);
 
   // -------say hi first time -------
-  Serial.println("Start ESP32-C3");
+  Serial.println("Start ESP32-C3 auto feed");
 
   connectWiFi();
+
+  pinMode(8, OUTPUT);
+
+  last_api_time = millis() - api_interval;
 
 }
 
 void loop() {
-  // digitalWrite(8, HIGH);
 
-  // delay(1000);
+  unsigned long now = millis();
 
-  // digitalWrite(8, LOW);
+  // ===== ยิง API ทุก ๆ 5 นาที =====
+  if (now - last_api_time >= api_interval) {
+    last_api_time = now;
 
-  String data =  http_get(CONFIG_URL);
-  String update =  getConfig(data, "hour_time1");
+    cfg = http_get_config(CONFIG_URL);
 
+  }
+
+
+  static int last_feed_minute = -1;
 
   struct tm timeinfo;
   if (getTimeInfo(timeinfo)) {
     Serial.println(&timeinfo);
+    int current_hour   = timeinfo.tm_hour;
+    int current_minute = timeinfo.tm_min;
+    int duration       = 0;
+
+    duration = (cfg.feed_time1.hour == current_hour && cfg.feed_time1.minute == current_minute)? cfg.feed_time1.duration_sec:duration;
+    duration = (cfg.feed_time2.hour == current_hour && cfg.feed_time2.minute == current_minute)? cfg.feed_time2.duration_sec:duration;
+    duration = (cfg.feed_time3.hour == current_hour && cfg.feed_time3.minute == current_minute)? cfg.feed_time3.duration_sec:duration;
+
+    if (duration > 0) {
+      if (last_feed_minute != current_minute) {
+        last_feed_minute = current_minute;
+
+        Serial.printf("FEED START %d sec\n", duration);
+        digitalWrite(8, LOW); //led
+        delay(duration * 1000);
+        digitalWrite(8, HIGH);
+        Serial.println("FEED DONE");
+
+        delay((60 - timeinfo.tm_sec) * 1000);
+      }
+    }
+
+
   }
-
-
-
-
-  
-  
-
-
 
   delay(10 * 1000);   //second
 
