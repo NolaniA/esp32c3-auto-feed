@@ -1,15 +1,15 @@
 {
-    "hour_time1" :{
+    "feed_time1" :{
         "hour" : 8,
         "minute" : 0,
         "duration_sec" : 10
     },
-    "hour_time2" :{
+    "feed_time2" :{
         "hour" : 12,
         "minute" : 0,
         "duration_sec" : 10
     },
-    "hour_time3" :{
+    "feed_time3" :{
         "hour" : 18,
         "minute" : 0,
         "duration_sec" : 10

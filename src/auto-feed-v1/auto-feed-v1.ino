@@ -18,6 +18,9 @@ const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 7 * 3600;     // GMT+7
 const int   daylightOffset_sec = 0;
 
+// ---- config
+const char* CONFIG_URL = "https://nolania.github.io/esp32c3-auto-feed/config-auto-feed/config-time.json";
+
 
 String http_get(String url){
   // check wifi connect
@@ -126,8 +129,8 @@ void loop() {
 
   // digitalWrite(8, LOW);
 
-  String data =  http_get("https://nolania.github.io/esp32-ota-setup/config.json");
-  String update =  getConfig(data, "update");
+  String data =  http_get(CONFIG_URL);
+  String update =  getConfig(data, "hour_time1");
 
 
   struct tm timeinfo;
