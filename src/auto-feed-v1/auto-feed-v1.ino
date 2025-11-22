@@ -140,6 +140,7 @@ void setup() {
   connectWiFi();
 
   pinMode(8, OUTPUT);
+  digitalWrite(8, HIGH);  //off led for test
 
   last_api_time = millis() - api_interval;
 
