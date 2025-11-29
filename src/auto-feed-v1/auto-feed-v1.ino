@@ -8,10 +8,14 @@
 
 #include "time.h"
 
+#include <ESP32Servo.h>
+
+Servo myservo;
+
 
 // ---- Wi-Fi ----
-const char* WIFI_SSID = " GgEz";
-const char* WIFI_PASS = "0989425594";
+const char* WIFI_SSID = "sleep_yolo_2.4G";
+const char* WIFI_PASS = "sleepnow";
 
 // ---- Time ---- 
 const char* ntpServer = "pool.ntp.org";
@@ -37,6 +41,8 @@ Config cfg;
 
 unsigned long last_api_time = 0;
 const unsigned long api_interval = 5 * 60 * 1000;   // 5 นาที
+const int   SERVO_PIN = 9;
+
 
 
 
@@ -139,10 +145,12 @@ void setup() {
 
   connectWiFi();
 
-  pinMode(8, OUTPUT);
-  digitalWrite(8, HIGH);  //off led for test
+  // pinMode(8, OUTPUT);
+  // digitalWrite(8, HIGH);  //off led for test
 
   last_api_time = millis() - api_interval;
+
+  myservo.attach(SERVO_PIN);
 
 }
 
@@ -177,9 +185,11 @@ void loop() {
         last_feed_minute = current_minute;
 
         Serial.printf("FEED START %d sec\n", duration);
-        digitalWrite(8, LOW); //led
+        // digitalWrite(8, LOW); //led
+        myservo.writeMicroseconds(5000);  //start
         delay(duration * 1000);
-        digitalWrite(8, HIGH);
+        myservo.writeMicroseconds(1500);  //stop
+        // digitalWrite(8, HIGH);
         Serial.println("FEED DONE");
 
         delay((60 - timeinfo.tm_sec) * 1000);
@@ -188,7 +198,15 @@ void loop() {
 
 
   }
+  // test start
+  // Serial.println("start");
+  // myservo.writeMicroseconds(5000);
+  // delay(5000);
+  // myservo.writeMicroseconds(1500);
+  // Serial.println("end");
+  // test end
 
-  delay(10 * 1000);   //second
+  delay(5 * 1000);   //second
 
 }
+

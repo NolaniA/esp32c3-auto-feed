@@ -2,16 +2,16 @@
     "feed_time1" :{
         "hour" : 8,
         "minute" : 0,
-        "duration_sec" : 10
+        "duration_sec" : 5
     },
     "feed_time2" :{
         "hour" : 12,
         "minute" : 0,
-        "duration_sec" : 10
+        "duration_sec" : 5
     },
     "feed_time3" :{
         "hour" : 18,
         "minute" : 0,
-        "duration_sec" : 10
+        "duration_sec" : 5
     }
 }
