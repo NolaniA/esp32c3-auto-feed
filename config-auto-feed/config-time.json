@@ -6,7 +6,7 @@
     },
     "feed_time2" :{
         "hour" : 12,
-        "minute" : 15,
+        "minute" : 0,
         "duration_sec" : 10
     },
     "feed_time3" :{
