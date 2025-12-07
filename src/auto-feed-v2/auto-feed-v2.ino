@@ -99,29 +99,37 @@ void connectWiFi() {
   unsigned long start = millis();
   const unsigned long timeout = 15000;
 
+  // ===== TRY 1 =====
   while (WiFi.status() != WL_CONNECTED && millis() - start < timeout) {
     delay(300);
     Serial.print(".");
   }
 
-  if (WiFi.status() == WL_CONNECTED)
+  if (WiFi.status() == WL_CONNECTED) {
     Serial.printf("\nWiFi OK: %s\n", WiFi.localIP().toString().c_str());
-  else
-    Serial.println("Retry connect wifi");
+    return;   
+  }
 
-    WiFi.begin("sleepyolo_2.4G", WIFI_PASS);
+  // ===== TRY 2 =====
+  Serial.println("\nRetry connect wifi (backup SSID)...");
+  WiFi.disconnect(true);
+  delay(500);
 
-    start = millis();
+  WiFi.begin("sleepyolo_2.4G", WIFI_PASS);
 
-    while (WiFi.status() != WL_CONNECTED && millis() - start < timeout) {
-      delay(300);
-      Serial.print(".");
-    }
-    if (WiFi.status() == WL_CONNECTED)
-      Serial.printf("\nWiFi OK: %s\n", WiFi.localIP().toString().c_str());
-    else
-      Serial.println("\nWiFi FAIL");
+  start = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - start < timeout) {
+    delay(300);
+    Serial.print(".");
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.printf("\nWiFi OK: %s\n", WiFi.localIP().toString().c_str());
+  } else {
+    Serial.println("\nWiFi FAIL");
+  }
 }
+
 
 //--------------------------------------------
 // GET TIME
